@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Web Terminal</title>
+    <script src="https://cdn.jsdelivr.net/npm/xterm@4.10.0/dist/xterm.min.js"></script>
+</head>
+<body>
+    <div id="terminal"></div>
+
+    <script>
+        const terminal = new Terminal();
+        terminal.open(document.getElementById('terminal'));
+
+        const ws = new WebSocket('ws://localhost:5000/terminal');
+
+        ws.onmessage = (event) => {
+            terminal.write(event.data);
+        };
+
+        terminal.onData(data => ws.send(data));
+    </script>
+</body>
+</html>
