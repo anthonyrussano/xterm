@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Xterm.js Example</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm/css/xterm.css" />
+</head>
+<body>
+    <div id="terminal"></div>
+    <script src="https://cdn.jsdelivr.net/npm/xterm/lib/xterm.js"></script>
+    <script>
+        const term = new Terminal();
+        term.open(document.getElementById('terminal'));
+
+        let inputBuffer = '';
+
+        const ws = new WebSocket('ws://localhost:3000');
+        ws.onopen = () => {
+            term.onData(data => {
+                if (data.charCodeAt(0) === 13) { // Enter key
+                    if (ws.readyState === WebSocket.OPEN) {
+                        ws.send(inputBuffer + '\n');
+                    }
+                    inputBuffer = '';
+                    term.write('\r\n');  // Move to the beginning of the next line
+                } else if (data.charCodeAt(0) === 127) { // Backspace key
+                    if (inputBuffer.length > 0) {
+                        inputBuffer = inputBuffer.slice(0, -1);
+                        term.write('\b \b');  // Erase the last character on the terminal
+                    }
+                } else {
+                    inputBuffer += data;
+                    term.write(data);  // Echo the typed character
+                }
+            });
+        };
+
+        ws.onmessage = event => {
+            term.write(event.data); // Display the server's response
+        };
+    </script>
+</body>
+</html>
